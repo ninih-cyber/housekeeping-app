@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>查房好朋友</title>
+    <link rel="manifest" href="data:application/json,{%22name%22:%22查房好朋友%22,%22short_name%22:%22查房%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%23ffffff%22,%22theme_color%22:%22%232563eb%22,%22icons%22:[{%22src%22:%22data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==%22,%22sizes%22:%22192x192%22,%22type%22:%22image/png%22}]}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .title {
+            font-size: 28px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #2563eb, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .date {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        
+        .clear-btn {
+            background: linear-gradient(45deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .clear-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+        }
+        
+        .floor-card {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .floor-card:hover {
+            border-color: #2563eb;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.15);
+        }
+        
+        .floor-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        
+        .floor-stats {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        
+        .rooms-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+        
+        .room-card {
+            padding: 8px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .room-card:hover {
+            transform: scale(1.05);
+        }
+        
+        .room-card.ok {
+            background: linear-gradient(45deg, #dcfce7, #bbf7d0);
+            border-color: #4ade80;
+            box-shadow: 0 2px 8px rgba(74, 222, 128, 0.3);
+        }
+        
+        .room-card.stay {
+            background: linear-gradient(45deg, #dbeafe, #bfdbfe);
+            border-color: #3b82f6;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+        
+        .room-card.both {
+            background: linear-gradient(45deg, #fef3c7, #fed7aa);
+            border-color: #f59e0b;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+        }
+        
+        .back-btn {
+            background: linear-gradient(45deg, #f3f4f6, #e5e7eb);
+            border: none;
+            padding: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            margin-right: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .check-btn {
+            width: 100%;
+            padding: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 16px;
+            background: #f9fafb;
+            cursor: pointer;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .check-btn.active {
+            background: linear-gradient(45deg, #dcfce7, #bbf7d0);
+            border-color: #4ade80;
+            color: #166534;
+            box-shadow: 0 4px 15px rgba(74, 222, 128, 0.3);
+            transform: scale(1.02);
+        }
+        
+        .check-btn.stay.active {
+            background: linear-gradient(45deg, #dbeafe, #bfdbfe);
+            border-color: #3b82f6;
+            color: #1e40af;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+        
+        .check-btn:hover {
+            background: #f3f4f6;
+            transform: translateY(-2px);
+        }
+        
+        .textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            resize: none;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+        
+        .textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 350px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            transform: scale(0.9);
+            animation: modalSlideIn 0.3s ease forwards;
+        }
+        
+        @keyframes modalSlideIn {
+            to {
+                transform: scale(1);
+            }
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .modal-text {
+            color: #666;
+            margin-bottom: 25px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-btn.cancel {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        
+        .modal-btn.cancel:hover {
+            background: #d1d5db;
+        }
+        
+        .modal-btn.confirm {
+            background: linear-gradient(45deg, #ef4444, #dc2626);
+            color: white;
+        }
+        
+        .modal-btn.confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+        
+        .version-info {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #4ade80, #22c55e);
+            transition: width 0.3s ease;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .title {
+                font-size: 24px;
+            }
+            
+            .floor-title {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="app">
+            <!-- 內容會在這裡動態生成 -->
+        </div>
+        <div class="version-info">
+            查房好朋友 v2.0 | Made with ❤️
+        </div>
+    </div>
+
+    <script>
+        // 全域變數
+        let currentView = 'floors';
+        let selectedFloor = null;
+        let checkData = {};
+        let currentDate = '';
+        let showClearConfirm = false;
+
+        // 樓層和房號配置
+        const floorConfig = {
+            2: { start: 201, end: 213, skip: [202, 204] },
+            3: { start: 301, end: 313, skip: [302, 304] },
+            5: { start: 501, end: 513, skip: [504] },
+            6: { start: 601, end: 613, skip: [604] },
+            7: { start: 701, end: 713, skip: [704] },
+            8: { start: 801, end: 808, skip: [804] }
+        };
+
+        // 初始化
+        function init() {
+            const now = new Date();
+            currentDate = now.toLocaleDateString('zh-TW');
+            
+            // 載入儲存的資料
+            const savedData = getStoredData();
+            if (savedData) {
+                checkData = JSON.parse(savedData);
+            }
+            
+            render();
+        }
+
+        // 儲存資料 - 改用記憶體儲存以符合 Claude.ai 限制
+        function saveData() {
+            // 在實際部署時，這裡可以恢復使用 localStorage
+            // const now = new Date();
+            // const dataToSave = {
+            //     ...checkData,
+            //     lastSaved: now.toISOString(),
+            //     date: currentDate
+            // };
+            // localStorage.setItem(`housekeeping-${now.toDateString()}`, JSON.stringify(dataToSave));
+            
+            // 目前使用記憶體儲存
+            console.log('資料已儲存到記憶體', checkData);
+        }
+
+        // 讀取儲存資料
+        function getStoredData() {
+            // 在實際部署時，這裡可以恢復使用 localStorage
+            // const now = new Date();
+            // return localStorage.getItem(`housekeeping-${now.toDateString()}`);
+            
+            // 目前從記憶體讀取
+            return null;
+        }
+
+        // 生成房號列表
+        function getRoomNumbers(floor) {
+            const config = floorConfig[floor];
+            const rooms = [];
+            for (let i = config.start; i <= config.end; i++) {
+                if (!config.skip.includes(i)) {
+                    rooms.push(i.toString());
+                }
+            }
+            return rooms;
+        }
+
+        // 獲取房間狀態
+        function getRoomStatus(room) {
+            const roomData = checkData[room];
+            if (!roomData) return { text: '', className: '' };
+            
+            if (roomData.ok && roomData.stay) {
+                return { text: 'OK + 續住', className: 'both' };
+            } else if (roomData.ok) {
+                return { text: 'OK', className: 'ok' };
+            } else if (roomData.stay) {
+                return { text: '續住', className: 'stay' };
+            }
+            
+            return { text: '', className: '' };
+        }
+
+        // 計算樓層統計
+        function getFloorStats(floor) {
+            const rooms = getRoomNumbers(floor);
+            let okCount = 0;
+            let stayCount = 0;
+            let totalProcessed = 0;
+
+            rooms.forEach(room => {
+                const roomData = checkData[room];
+                if (roomData) {
+                    if (roomData.ok) okCount++;
+                    if (roomData.stay) stayCount++;
+                    if (roomData.ok || roomData.stay) totalProcessed++;
+                }
+            });
+
+            return { okCount, stayCount, totalProcessed, totalRooms: rooms.length };
+        }
+
+        // 切換檢查狀態
+        function toggleCheck(room, type) {
+            if (!checkData[room]) checkData[room] = {};
+            checkData[room][type] = !checkData[room][type];
+            saveData();
+            render();
+        }
+
+        // 更新備註
+        function updateNote(room, note) {
+            if (!checkData[room]) checkData[room] = {};
+            checkData[room].note = note;
+            saveData();
+        }
+
+        // 清除資料
+        function clearAllData() {
+            checkData = {};
+            showClearConfirm = false;
+            // 在實際部署時，這裡可以恢復使用 localStorage
+            // const now = new Date();
+            // localStorage.removeItem(`housekeeping-${now.toDateString()}`);
+            render();
+        }
+
+        // 渲染樓層頁面
+        function renderFloorsView() {
+            let html = `
+                <div class="header">
+                    <h1 class="title">🏨 查房好朋友</h1>
+                    <div class="date">查房日期：${currentDate}</div>
+                    <button class="clear-btn" onclick="showClearConfirm = true; render()">
+                        🗑️ 清除今日資料
+                    </button>
+                </div>
+            `;
+
+            Object.keys(floorConfig).forEach(floor => {
+                const stats = getFloorStats(parseInt(floor));
+                const rooms = getRoomNumbers(parseInt(floor));
+                const progress = stats.totalRooms > 0 ? (stats.totalProcessed / stats.totalRooms) * 100 : 0;
+                
+                html += `
+                    <div class="floor-card" onclick="selectedFloor = ${floor}; currentView = 'rooms'; render()">
+                        <div class="floor-title">${floor}樓</div>
+                        <div class="floor-stats">
+                            <div>查房日期：${currentDate}</div>
+                            <div>OK: ${stats.okCount}間 | 續住: ${stats.stayCount}間</div>
+                            <div>已處理: ${stats.totalProcessed}/${stats.totalRooms}間</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${progress}%"></div>
+                            </div>
+                        </div>
+                        <div class="rooms-grid">
+                `;
+                
+                rooms.forEach(room => {
+                    const status = getRoomStatus(room);
+                    html += `
+                        <div class="room-card ${status.className}">
+                            <div style="font-weight: bold;">${room}</div>
+                            <div style="font-size: 10px;">${status.text}</div>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+            });
+
+            if (showClearConfirm) {
+                html += `
+                    <div class="modal">
+                        <div class="modal-content">
+                            <h3 class="modal-title">確認清除資料</h3>
+                            <p class="modal-text">
+                                確定要清除今日 (${currentDate}) 的所有查房記錄嗎？<br>
+                                <span style="color: #ef4444; font-weight: bold;">此操作無法復原！</span>
+                            </p>
+                            <div class="modal-buttons">
+                                <button class="modal-btn cancel" onclick="showClearConfirm = false; render()">取消</button>
+                                <button class="modal-btn confirm" onclick="clearAllData()">確認清除</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            return html;
+        }
+
+        // 渲染房間頁面
+        function renderRoomsView() {
+            const rooms = getRoomNumbers(selectedFloor);
+            
+            let html = `
+                <div style="display: flex; align-items: center; margin-bottom: 30px;">
+                    <button class="back-btn" onclick="currentView = 'floors'; render()">←</button>
+                    <div>
+                        <h2 style="font-size: 20px; font-weight: bold;">${selectedFloor}樓</h2>
+                        <div style="font-size: 14px; color: #666;">查房日期：${currentDate}</div>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            `;
+            
+            rooms.forEach(room => {
+                const status = getRoomStatus(room);
+                html += `
+                    <div class="room-card ${status.className}" style="padding: 20px; cursor: pointer; font-size: 16px;" 
+                         onclick="selectedFloor = {floor: ${selectedFloor}, room: '${room}'}; currentView = 'check'; render()">
+                        <div style="font-weight: bold; font-size: 18px;">${room}</div>
+                        <div style="margin-top: 5px;">${status.text}</div>
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+            return html;
+        }
+
+        // 渲染檢查頁面
+        function renderCheckView() {
+            const { floor, room } = selectedFloor;
+            const roomData = checkData[room] || {};
+            
+            let html = `
+                <div style="display: flex; align-items: center; margin-bottom: 30px;">
+                    <button class="back-btn" onclick="selectedFloor = ${floor}; currentView = 'rooms'; render()">←</button>
+                    <div>
+                        <h2 style="font-size: 20px; font-weight: bold;">房間 ${room}</h2>
+                        <div style="font-size: 14px; color: #666;">查房日期：${currentDate}</div>
+                    </div>
+                </div>
+                
+                <button class="check-btn ${roomData.ok ? 'active' : ''}" 
+                        onclick="toggleCheck('${room}', 'ok')">
+                    🏠 房間 OK ${roomData.ok ? '✓' : ''}
+                </button>
+                
+                <button class="check-btn stay ${roomData.stay ? 'active' : ''}" 
+                        onclick="toggleCheck('${room}', 'stay')">
+                    💤 續住 ${roomData.stay ? '✓' : ''}
+                </button>
+                
+                <div>
+                    <label style="display: block; font-size: 16px; font-weight: bold; margin-bottom: 10px;">備註</label>
+                    <textarea class="textarea" rows="4" placeholder="輸入備註..." 
+                              oninput="updateNote('${room}', this.value)">${roomData.note || ''}</textarea>
+                </div>
+            `;
+            
+            return html;
+        }
+
+        // 主要渲染函數
+        function render() {
+            const app = document.getElementById('app');
+            let html = '';
+            
+            switch (currentView) {
+                case 'floors':
+                    html = renderFloorsView();
+                    break;
+                case 'rooms':
+                    html = renderRoomsView();
+                    break;
+                case 'check':
+                    html = renderCheckView();
+                    break;
+            }
+            
+            app.innerHTML = html;
+        }
+
+        // 啟動應用程式
+        init();
+    </script>
+</body>
+</html>
